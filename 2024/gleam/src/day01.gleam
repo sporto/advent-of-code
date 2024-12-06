@@ -7,7 +7,7 @@ import gleam/string
 import utils
 
 pub fn part_1() {
-  use content <- try(utils.load_and_parse("./input/01/input.txt", parse_day_01))
+  use content <- try(utils.load_and_parse("./input/01/input.txt", parse_line))
 
   let list_left = list.map(content, pair.first) |> list.sort(int.compare)
 
@@ -27,7 +27,7 @@ pub fn part_1() {
 }
 
 pub fn part_2() {
-  use content <- try(utils.load_and_parse("./input/01/input.txt", parse_day_01))
+  use content <- try(utils.load_and_parse("./input/01/input.txt", parse_line))
 
   let list_left = list.map(content, pair.first)
   let list_right = list.map(content, pair.second)
@@ -42,11 +42,7 @@ pub fn part_2() {
   Ok(sum)
 }
 
-fn parse_day_01(content: List(String)) {
-  list.try_map(content, parse_day_01_line)
-}
-
-fn parse_day_01_line(line: String) {
+fn parse_line(line: String) {
   case string.split(line, on: "   ") {
     [a, b] -> {
       use a_num <- try(int.parse(a) |> result.replace_error("Invalid a"))

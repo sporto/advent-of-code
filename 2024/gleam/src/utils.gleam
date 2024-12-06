@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/io
 import gleam/list
 import gleam/result
@@ -13,5 +14,9 @@ pub fn load(path: String) -> Result(List(String), String) {
 
 pub fn load_and_parse(path: String, parse) {
   load(path)
-  |> result.then(parse)
+  |> result.then(list.try_map(_, parse))
+}
+
+pub fn parse_int(s: String) {
+  int.parse(s) |> result.replace_error("Invalid number " <> s)
 }
