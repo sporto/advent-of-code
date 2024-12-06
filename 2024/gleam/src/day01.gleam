@@ -6,7 +6,7 @@ import gleam/result.{try}
 import gleam/string
 import utils
 
-pub fn main() {
+pub fn part_1() {
   use content <- try(utils.load_and_parse("./input/01/input.txt", parse_day_01))
 
   let list_left = list.map(content, pair.first) |> list.sort(int.compare)
@@ -22,6 +22,22 @@ pub fn main() {
     })
 
   let sum = int.sum(distances)
+
+  Ok(sum)
+}
+
+pub fn part_2() {
+  use content <- try(utils.load_and_parse("./input/01/input.txt", parse_day_01))
+
+  let list_left = list.map(content, pair.first)
+  let list_right = list.map(content, pair.second)
+
+  let list_similarity =
+    list.map(list_left, fn(n) { n * list.count(list_right, fn(m) { n == m }) })
+
+  // io.debug(list_similarity)
+
+  let sum = int.sum(list_similarity)
 
   Ok(sum)
 }
