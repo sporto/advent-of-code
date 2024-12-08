@@ -2,7 +2,7 @@ import day03 as day
 import gleam/io
 
 pub fn main() {
-  let result = day.part_1()
+  let result = day.part_2()
 
   io.debug(result)
 }
