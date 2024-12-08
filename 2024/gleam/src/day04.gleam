@@ -17,11 +17,21 @@ pub fn part_1() {
   use content <- try(utils.load_and_parse("./input/04/input", parse_line))
   let matrix = make_matrix(content)
 
-  // io.debug(dict.size(matrix))
+  let count =
+    dict.fold(over: matrix, from: 0, with: fn(acc, coordinate, _) {
+      acc + check_p1_coordinate(matrix, coordinate)
+    })
+
+  Ok(count)
+}
+
+pub fn part_2() {
+  use content <- try(utils.load_and_parse("./input/04/input", parse_line))
+  let matrix = make_matrix(content)
 
   let count =
     dict.fold(over: matrix, from: 0, with: fn(acc, coordinate, _) {
-      acc + check_coordinate(matrix, coordinate)
+      acc + check_p2_coordinate(matrix, coordinate)
     })
 
   Ok(count)
@@ -69,26 +79,62 @@ fn get_movement(direction) {
   }
 }
 
-fn check_coordinate(matrix: Matrix, coordinate: Coordinate) {
+fn move(coordinate, direction, steps) {
+  let #(x, y) = coordinate
+  let #(mx, my) = get_movement(direction)
+  #(x + { steps * mx }, y + { steps * my })
+}
+
+fn check_p1_coordinate(matrix: Matrix, coordinate: Coordinate) {
   directions
   |> list.filter_map(fn(direction) {
-    check_direction(matrix, coordinate, direction)
+    check_p1_direction(matrix, coordinate, direction)
   })
   |> int.sum()
 }
 
-fn check_direction(matrix: Matrix, coordinate, direction) {
+fn check_p1_direction(matrix: Matrix, coordinate, direction) {
   let #(x, y) = coordinate
   let #(mx, my) = get_movement(direction)
 
   use lx <- try(dict.get(matrix, coordinate))
-  use lm <- try(dict.get(matrix, #(x + mx, y + my)))
-  use la <- try(dict.get(matrix, #(x + { 2 * mx }, y + { 2 * my })))
-  use ls <- try(dict.get(matrix, #(x + { 3 * mx }, y + { 3 * my })))
+  use lm <- try(dict.get(matrix, move(coordinate, direction, 1)))
+  use la <- try(dict.get(matrix, move(coordinate, direction, 2)))
+  use ls <- try(dict.get(matrix, move(coordinate, direction, 3)))
   let xmas = lx <> lm <> la <> ls
 
   case xmas {
     "XMAS" -> Ok(1)
+    _ -> Ok(0)
+  }
+}
+
+fn check_p2_coordinate(matrix: Matrix, coordinate: Coordinate) {
+  check_p2_coordinate_do(matrix, coordinate)
+  |> result.unwrap(0)
+}
+
+fn check_p2_coordinate_do(matrix: Matrix, coordinate: Coordinate) {
+  use center <- try(dict.get(matrix, coordinate))
+
+  case center {
+    "A" -> {
+      use nw <- try(dict.get(matrix, move(coordinate, NW, 1)))
+      use ne <- try(dict.get(matrix, move(coordinate, NE, 1)))
+      use se <- try(dict.get(matrix, move(coordinate, SE, 1)))
+      use sw <- try(dict.get(matrix, move(coordinate, SW, 1)))
+
+      let d1 = nw <> center <> se
+      let d2 = ne <> center <> sw
+
+      let d1_ok = d1 == "MAS" || d1 == "SAM"
+      let d2_ok = d2 == "MAS" || d2 == "SAM"
+
+      case d1_ok && d2_ok {
+        True -> Ok(1)
+        False -> Ok(0)
+      }
+    }
     _ -> Ok(0)
   }
 }
