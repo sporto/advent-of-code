@@ -3,6 +3,7 @@ import gleam/dict
 import gleam/int
 import gleam/io
 import gleam/list
+import gleam/order
 import gleam/pair
 import gleam/regexp
 import gleam/result.{try}
@@ -36,6 +37,34 @@ pub fn part_1() {
     // |> io.debug
     |> list.map(take_middle)
     // |> io.debug
+    |> int.sum
+
+  Ok(sum)
+}
+
+pub fn part_2() {
+  use content <- try(utils.load("./input/05/input"))
+
+  use instructions <- try(parse_content(content))
+
+  let not_in_order =
+    instructions.updates
+    |> list.filter_map(fn(update) {
+      let is_correct = is_update_in_order(update, instructions.ordering_rules)
+      case is_correct {
+        True -> Error(Nil)
+        False -> Ok(update)
+      }
+    })
+
+  // Put them in order
+  let in_order =
+    not_in_order
+    |> list.map(put_update_in_order(_, instructions.ordering_rules))
+
+  let sum =
+    in_order
+    |> list.map(take_middle)
     |> int.sum
 
   Ok(sum)
@@ -126,4 +155,18 @@ fn take_middle(update: List(Int)) {
   |> list.drop(list.length(update) / 2)
   |> list.first
   |> result.unwrap(0)
+}
+
+fn put_update_in_order(update: List(Int), ordering_rules: Ordering) {
+  list.sort(update, fn(a, b) {
+    case dict.get(ordering_rules, a) {
+      Ok(pages_after) -> {
+        case list.contains(pages_after, b) {
+          True -> order.Gt
+          False -> order.Lt
+        }
+      }
+      _ -> order.Eq
+    }
+  })
 }
