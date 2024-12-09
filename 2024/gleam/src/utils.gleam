@@ -1,3 +1,4 @@
+import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/result.{try}
@@ -26,4 +27,27 @@ pub fn load_and_parse(path: String, parse) {
 
 pub fn parse_int(s: String) {
   int.parse(s) |> result.replace_error("Invalid number " <> s)
+}
+
+type Coordinate =
+  #(Int, Int)
+
+type Matrix(a) =
+  dict.Dict(Coordinate, a)
+
+// #(x, y)
+pub fn make_matrix(content: List(List(a))) -> Matrix(a) {
+  list.index_fold(
+    over: content,
+    from: dict.new(),
+    with: fn(acc, row, row_index) {
+      list.index_fold(over: row, from: acc, with: fn(acc, cell, cell_index) {
+        dict.insert(acc, #(cell_index, row_index), cell)
+      })
+    },
+  )
+}
+
+pub fn list_max(nums: List(Int), base: Int) -> Int {
+  list.fold(nums, base, int.max)
 }
