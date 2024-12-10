@@ -1,6 +1,7 @@
 import gleam/dict
 import gleam/io
 import gleam/list
+import gleam/option.{None, Some}
 import gleam/pair
 import gleam/result.{try}
 import gleam/set
@@ -9,6 +10,9 @@ import utils
 
 type Matrix =
   dict.Dict(utils.Coordinate, String)
+
+type Walked =
+  dict.Dict(utils.Coordinate, Int)
 
 pub type Direction {
   Up
@@ -26,12 +30,12 @@ pub fn part_1() {
   let matrix = utils.make_matrix(content)
   use guard_position <- try(find_guard_position(matrix))
   let guard = Guard(position: guard_position, direction: Up) |> io.debug
-  let walked = set.new()
+  let walked = dict.new()
   let res = run(matrix, walked, guard)
 
   // draw(res)
 
-  Ok(res |> set.size)
+  Ok(res |> dict.size)
 }
 
 fn parse_line(line: String) {
@@ -53,9 +57,16 @@ fn find_guard_position(matrix) {
   |> result.replace_error("No guard found")
 }
 
-fn run(matrix: Matrix, walked: set.Set(utils.Coordinate), guard: Guard) {
+fn run(matrix: Matrix, walked: Walked, guard: Guard) {
   // Current position is added to walked
-  let next_walked = set.insert(walked, guard.position)
+  let next_walked =
+    dict.upsert(walked, guard.position, fn(x) {
+      case x {
+        Some(i) -> i + 1
+        None -> 0
+      }
+    })
+
   let next_wanted_position = walk(guard)
   // io.debug(next_wanted_position)
   let what_is_in_there = dict.get(matrix, next_wanted_position)
@@ -101,22 +112,21 @@ fn turn(direction) {
     Left -> Up
   }
 }
+// fn draw(walked: Walked) {
+//   let xs = set.map(walked, pair.first) |> set.to_list
+//   let ys = set.map(walked, pair.second) |> set.to_list
+//   let max_x = utils.list_max(xs, 0)
+//   let max_y = utils.list_max(ys, 0)
+//   list.each(list.range(0, max_y), fn(y) {
+//     let line =
+//       list.map(list.range(0, max_x), fn(x) {
+//         case set.contains(walked, #(x, y)) {
+//           True -> "X"
+//           False -> "."
+//         }
+//       })
+//       |> string.join("")
 
-fn draw(walked: set.Set(utils.Coordinate)) {
-  let xs = set.map(walked, pair.first) |> set.to_list
-  let ys = set.map(walked, pair.second) |> set.to_list
-  let max_x = utils.list_max(xs, 0)
-  let max_y = utils.list_max(ys, 0)
-  list.each(list.range(0, max_y), fn(y) {
-    let line =
-      list.map(list.range(0, max_x), fn(x) {
-        case set.contains(walked, #(x, y)) {
-          True -> "X"
-          False -> "."
-        }
-      })
-      |> string.join("")
-
-    io.println(line)
-  })
-}
+//     io.println(line)
+//   })
+// }
