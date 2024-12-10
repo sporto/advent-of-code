@@ -12,7 +12,7 @@ type Matrix =
   dict.Dict(utils.Coordinate, String)
 
 type Walked =
-  dict.Dict(utils.Coordinate, Int)
+  dict.Dict(utils.Coordinate, List(Direction))
 
 pub type Direction {
   Up
@@ -36,6 +36,21 @@ pub fn part_1() {
   // draw(res)
 
   Ok(res |> dict.size)
+}
+
+pub fn part_2() {
+  use content <- try(utils.load_and_parse("./input/06/sample", parse_line))
+  let matrix = utils.make_matrix(content)
+  use guard_position <- try(find_guard_position(matrix))
+  let guard = Guard(position: guard_position, direction: Up) |> io.debug
+  let walked = dict.new()
+  let res = run(matrix, walked, guard)
+
+  io.debug(res)
+
+  // draw(res)
+
+  Ok(res)
 }
 
 fn parse_line(line: String) {
@@ -62,10 +77,15 @@ fn run(matrix: Matrix, walked: Walked, guard: Guard) {
   let next_walked =
     dict.upsert(walked, guard.position, fn(x) {
       case x {
-        Some(i) -> i + 1
-        None -> 0
+        Some(dirs) -> list.append(dirs, [guard.direction])
+        None -> [guard.direction]
       }
     })
+
+  // Can we send the guard in a loop?
+  // We need to see if we have a clear path on the right
+  // To a path we have already walked
+  //
 
   let next_wanted_position = walk(guard)
   // io.debug(next_wanted_position)
@@ -130,3 +150,6 @@ fn turn(direction) {
 //     io.println(line)
 //   })
 // }
+
+// We need to find, points with 2
+// And having the immediate right with 1
