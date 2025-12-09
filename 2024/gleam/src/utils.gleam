@@ -29,6 +29,14 @@ pub fn parse_int(s: String) {
   int.parse(s) |> result.replace_error("Invalid number " <> s)
 }
 
+pub fn concat_ints(a, b) {
+  use a <- try(int.digits(a, 10))
+  use b <- try(int.digits(b, 10))
+
+  list.append(a, b)
+  |> int.undigits(10)
+}
+
 type Coordinate =
   #(Int, Int)
 
