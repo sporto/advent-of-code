@@ -5,7 +5,7 @@ import gleam/option
 import gleam/result
 import gleam/string
 
-pub fn day01() {
+pub fn day() {
   advent.Day(
     day: 1,
     parse:,
