@@ -2,6 +2,7 @@ import advent
 import gleam/int
 import gleam/list
 import gleam/option
+import gleam/pair
 import gleam/result.{try}
 import gleam/set
 import gleam/string
@@ -15,12 +16,13 @@ pub fn day() {
     wrong_answers_a: [],
     part_b:,
     expected_b: option.None,
-    wrong_answers_b: [],
+    wrong_answers_b: [308_693_638_312_832],
   )
 }
 
-pub type Range =
-  #(Int, Int)
+pub type Range {
+  Range(start: Int, end: Int)
+}
 
 pub type Input {
   Input(ranges: List(Range), ingredients: List(Int))
@@ -51,7 +53,7 @@ fn parse_range_line(line) {
   use start <- try(int.parse(a))
   use end <- try(int.parse(b))
 
-  Ok(#(start, end))
+  Ok(Range(start, end))
 }
 
 fn parse_ingredients(content) {
@@ -76,22 +78,50 @@ fn is_fresh(ranges: List(Range), ingredient: Int) {
 }
 
 fn is_in_range(range: Range, n: Int) {
-  let #(start, end) = range
-  n >= start && n <= end
+  n >= range.start && n <= range.end
 }
 
 fn part_b(input: Input) -> Int {
-  // Make sets, join them all
-  // count
-  //
   input.ranges
-  |> list.map(range_to_set)
-  |> list.fold(set.new(), fn(acc, other) { set.union(acc, other) })
-  |> set.size
+  |> sorted_ranges
+  |> merge
+  // |> echo
+  |> list.map(fn(range) { range.end - range.start + 1 })
+  |> int.sum
 }
 
-fn range_to_set(range: Range) {
-  let #(a, b) = range
-  list.range(a, b)
-  |> set.from_list
+fn sorted_ranges(ranges: List(Range)) -> List(Range) {
+  ranges
+  |> list.sort(fn(a, b) { int.compare(a.start, b.start) })
+}
+
+fn merge(ranges: List(Range)) {
+  case ranges {
+    [first, ..rest] -> merge_next([], first, rest)
+    _ -> []
+  }
+}
+
+fn merge_next(accumulated: List(Range), current: Range, remaining: List(Range)) {
+  case remaining {
+    [next, ..rest] -> merge_range(accumulated, current, next, rest)
+    _ -> list.append(accumulated, [current])
+  }
+}
+
+fn merge_range(
+  accumulated: List(Range),
+  previous: Range,
+  current: Range,
+  remaining: List(Range),
+) -> List(Range) {
+  case previous.end >= current.start {
+    True -> {
+      let together = Range(start: previous.start, end: current.end)
+      merge_next(accumulated, together, remaining)
+    }
+    False -> {
+      merge_next(list.append(accumulated, [previous]), current, remaining)
+    }
+  }
 }
