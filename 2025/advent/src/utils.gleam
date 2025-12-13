@@ -1,6 +1,7 @@
 import gleam/dict
 import gleam/int
 import gleam/list
+import gleam/result
 import gleam/string
 
 pub fn parse_lines(content: String, parse_line) {
@@ -10,13 +11,35 @@ pub fn parse_lines(content: String, parse_line) {
   |> list.try_map(parse_line)
 }
 
-pub fn join_nums(nums) {
+pub fn parse_int(c) {
+  c |> int.parse |> result.replace_error("Couldnt parse " <> c)
+}
+
+pub fn undigits(nums) {
   // result = 9*100 + 2*10 + 3*1  # = 923
 
   nums
   |> list.reverse
   |> list.index_map(num_power)
   |> int.sum
+}
+
+pub fn digits(num: Int) {
+  let len = num |> int.to_string |> string.length
+  digits_do([], num, len - 2)
+}
+
+fn digits_do(acc, num, power) {
+  case power {
+    -1 -> list.append(acc, [num])
+    _ -> {
+      let divider = num_power(10, power)
+      let res = num / divider
+      let next_acc = list.append(acc, [res])
+      let next_num = num - { res * divider }
+      digits_do(next_acc, next_num, power - 1)
+    }
+  }
 }
 
 // index represent the position from to the decimal

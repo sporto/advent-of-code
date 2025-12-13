@@ -83,7 +83,7 @@ fn get_joltage_2(bank: List(Int)) {
   find_nums([], bank, 12)
   |> result.unwrap([])
   // |> echo
-  |> utils.join_nums
+  |> utils.undigits
 }
 
 pub fn find_nums(acc, nums, needed) {

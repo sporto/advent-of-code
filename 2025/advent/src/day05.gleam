@@ -15,7 +15,7 @@ pub fn day() {
     expected_a: option.Some(690),
     wrong_answers_a: [],
     part_b:,
-    expected_b: option.None,
+    expected_b: option.Some(344_323_629_240_733),
     wrong_answers_b: [308_693_638_312_832],
   )
 }
@@ -83,11 +83,16 @@ fn is_in_range(range: Range, n: Int) {
 
 fn part_b(input: Input) -> Int {
   input.ranges
-  |> sorted_ranges
-  |> merge
+  |> sort_and_merge
   // |> echo
   |> list.map(fn(range) { range.end - range.start + 1 })
   |> int.sum
+}
+
+pub fn sort_and_merge(ranges: List(Range)) {
+  ranges
+  |> sorted_ranges
+  |> merge
 }
 
 fn sorted_ranges(ranges: List(Range)) -> List(Range) {
@@ -117,7 +122,8 @@ fn merge_range(
 ) -> List(Range) {
   case previous.end >= current.start {
     True -> {
-      let together = Range(start: previous.start, end: current.end)
+      let together =
+        Range(start: previous.start, end: int.max(previous.end, current.end))
       merge_next(accumulated, together, remaining)
     }
     False -> {
