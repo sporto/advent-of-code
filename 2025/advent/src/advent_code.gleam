@@ -3,6 +3,7 @@ import day01
 import day02
 import day03
 import day04
+import day05
 
 pub fn main() -> Nil {
   advent.year(2025)
@@ -11,6 +12,7 @@ pub fn main() -> Nil {
   |> advent.add_day(day02.day())
   |> advent.add_day(day03.day())
   |> advent.add_day(day04.day())
+  |> advent.add_day(day05.day())
   |> advent.add_padding_days(up_to: 12)
   |> advent.run
 }
