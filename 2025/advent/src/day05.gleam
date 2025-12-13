@@ -3,6 +3,7 @@ import gleam/int
 import gleam/list
 import gleam/option
 import gleam/result.{try}
+import gleam/set
 import gleam/string
 
 pub fn day() {
@@ -80,49 +81,17 @@ fn is_in_range(range: Range, n: Int) {
 }
 
 fn part_b(input: Input) -> Int {
-  merge_many_ranges(input.ranges)
-  |> list.map(fn(range) {
-    let #(a, b) = range
-    b - a
-  })
-  |> int.sum
+  // Make sets, join them all
+  // count
+  //
+  input.ranges
+  |> list.map(range_to_set)
+  |> list.fold(set.new(), fn(acc, other) { set.union(acc, other) })
+  |> set.size
 }
 
-pub fn merge_many_ranges(ranges: List(Range)) -> List(Range) {
-  // Go through each range, try to merge it with previous ranges
-  list.fold(ranges, [], fn(acc, range) { merge_range(acc, range) })
-}
-
-pub fn merge_range(ranges: List(Range), range: Range) {
-  list.fold(ranges, [], fn(acc, other_range) {
-    list.append(acc, merge_two_ranges(other_range, range))
-  })
-}
-
-pub fn merge_two_ranges(a: Range, b: Range) -> List(Range) {
-  range_contains(a, b)
-  |> result.try_recover(fn(_) { range_contains(b, a) })
-  |> result.try_recover(fn(_) { range_joins_before(a, b) })
-  |> result.try_recover(fn(_) { range_joins_before(b, a) })
-  |> result.unwrap([a, b])
-}
-
-fn range_contains(a: Range, b: Range) {
-  let #(a_sta, a_end) = a
-  let #(b_sta, b_end) = b
-
-  case a_sta <= b_sta && a_end >= b_end {
-    True -> Ok([a])
-    False -> Error(Nil)
-  }
-}
-
-fn range_joins_before(a: Range, b: Range) {
-  let #(a_sta, a_end) = a
-  let #(b_sta, b_end) = b
-
-  case a_end >= b_sta && a_end <= b_end {
-    True -> Ok([#(a_sta, b_end)])
-    False -> Error(Nil)
-  }
+fn range_to_set(range: Range) {
+  let #(a, b) = range
+  list.range(a, b)
+  |> set.from_list
 }
