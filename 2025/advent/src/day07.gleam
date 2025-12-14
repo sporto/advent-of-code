@@ -98,5 +98,40 @@ fn walk(first, rest, acc) {
 }
 
 fn part_b(input) {
-  todo
+  walk_next_b(input, option.None) + 1
+}
+
+fn walk_next_b(rows, beam: option.Option(Int)) {
+  case rows {
+    [first, ..rest] -> walk_b(first, rest, beam)
+    _ -> 0
+  }
+}
+
+fn walk_b(current, rest, beam: option.Option(Int)) {
+  list.index_fold(current, 0, fn(acc, char, index) {
+    case char {
+      "S" -> {
+        acc + walk_next_b(rest, option.Some(index))
+      }
+      "^" -> {
+        case option.Some(index) == beam {
+          True -> {
+            acc
+            + 1
+            + walk_next_b(rest, option.Some(index - 1))
+            + walk_next_b(rest, option.Some(index + 1))
+          }
+
+          False -> acc
+        }
+      }
+      _ -> {
+        case option.Some(index) == beam {
+          True -> acc + walk_next_b(rest, beam)
+          False -> acc
+        }
+      }
+    }
+  })
 }
